@@ -2,20 +2,24 @@ const editarBtn = document.getElementById('editar-produtos');
 const salvarBtn = document.getElementById('salvar-produtos');
 const produtos = document.querySelectorAll('.produto');
 
-// Função para carregar dados salvos
-window.onload = () => {
+// Carregar dados do LocalStorage ao iniciar
+window.addEventListener('load', () => {
     produtos.forEach(produto => {
-        const data = localStorage.getItem(produto.dataset.id);
-        if (data) {
-            const { descricao, preco, imgSrc } = JSON.parse(data);
-            produto.querySelector('p').innerText = descricao;
-            produto.querySelector('.preco').innerText = preco;
-            produto.querySelector('img').src = imgSrc;
+        const produtoId = produto.dataset.id;
+        const dadosSalvos = JSON.parse(localStorage.getItem(produtoId));
+
+        if (dadosSalvos) {
+            produto.querySelector('h2').innerText = dadosSalvos.nome;
+            produto.querySelector('p').innerText = dadosSalvos.descricao;
+            produto.querySelector('.preco').innerText = dadosSalvos.preco;
+            if (dadosSalvos.imgSrc) {
+                produto.querySelector('img').src = dadosSalvos.imgSrc;
+            }
         }
     });
-};
+});
 
-// Edição com senha
+// Permitir edição (protegido por senha)
 editarBtn.addEventListener('click', () => {
     const senha = prompt('🔒 Digite a senha para editar:');
     if (senha === 'admin123') {
@@ -34,18 +38,36 @@ editarBtn.addEventListener('click', () => {
 // Salvar Alterações
 salvarBtn.addEventListener('click', () => {
     produtos.forEach(produto => {
+        const produtoId = produto.dataset.id;
         const imgInput = produto.querySelector('.input-imagem');
         const imgTag = produto.querySelector('img');
+        const nome = produto.querySelector('h2').innerText;
+        const descricao = produto.querySelector('p').innerText;
+        const preco = produto.querySelector('.preco').innerText;
 
+        // Verificar se uma nova imagem foi carregada
         if (imgInput.files[0]) {
-            imgTag.src = URL.createObjectURL(imgInput.files[0]);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const imgSrc = e.target.result; // Base64
+                salvarProduto(produtoId, nome, descricao, preco, imgSrc);
+            };
+            reader.readAsDataURL(imgInput.files[0]);
+        } else {
+            salvarProduto(produtoId, nome, descricao, preco, imgTag.src);
         }
-
-        localStorage.setItem(produto.dataset.id, JSON.stringify({
-            descricao: produto.querySelector('p').innerText,
-            preco: produto.querySelector('.preco').innerText,
-            imgSrc: imgTag.src
-        }));
     });
+
     salvarBtn.classList.add('oculto');
 });
+
+// Função para salvar produto no localStorage
+function salvarProduto(id, nome, descricao, preco, imgSrc) {
+    localStorage.setItem(id, JSON.stringify({
+        nome,
+        descricao,
+        preco,
+        imgSrc
+    }));
+    alert('✅ Alterações salvas com sucesso!');
+}
