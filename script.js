@@ -6,7 +6,7 @@ const produtos = document.querySelectorAll('.produto');
 window.addEventListener('load', () => {
     produtos.forEach(produto => {
         const produtoId = produto.dataset.id;
-        const dadosSalvos = JSON.parse(localStorage.getItem(produtoId));
+        const dadosSalvos = JSON.parse(localStorage.getItem(`produto_${produtoId}`));
 
         if (dadosSalvos) {
             produto.querySelector('h2').innerText = dadosSalvos.nome;
@@ -63,7 +63,7 @@ salvarBtn.addEventListener('click', () => {
 
 // Função para salvar produto no localStorage
 function salvarProduto(id, nome, descricao, preco, imgSrc) {
-    localStorage.setItem(id, JSON.stringify({
+    localStorage.setItem(`produto_${id}`, JSON.stringify({
         nome,
         descricao,
         preco,
